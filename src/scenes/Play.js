@@ -184,7 +184,15 @@ class Play extends Phaser.Scene {
         // score add and repaint
         this.p1Score += ship.points;
         this.scoreLeft.text = this.p1Score;
-
+        this.timeLeft += 2;
         this.sound.play('sfx_explosion');
+    }
+
+    onRocketMiss() {
+        // Decrement timeLeft when the rocket misses
+        this.timeLeft -= 3; // Decrease by 5 seconds
+        if (this.timeLeft < 0) {
+            this.timeLeft = 0; // Prevent negative time
+        }
     }
 }

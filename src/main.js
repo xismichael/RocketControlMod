@@ -3,6 +3,7 @@
 // the approximate time it took to complete the project (in hours)
 // Mods:
 // timer on the screen: 3 points Implemented using in game timer
+// Implement a new timing/scoring mechanism that adds 2s to the clock for successful hits and subtracts 3s for misses: 5 points
 
 
 let config = {
