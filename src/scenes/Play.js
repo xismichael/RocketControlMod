@@ -1,7 +1,14 @@
+class GlobalData {
+    static turn = 0;
+    static score = 0;
+}
+
+
 class Play extends Phaser.Scene {
     constructor() {
         super("playScene");
     }
+
 
     preload() {
         // load images/tile sprites
@@ -76,9 +83,11 @@ class Play extends Phaser.Scene {
                 top: 5,
                 bottom: 5,
             }
+
+
+
         }
         this.timeLeft = game.settings.gameTimer / 1000;
-        console.log(this.timeLeft);
         this.timeLeftText = this.add.text(game.config.width / 2, 1 + borderUISize + borderPadding, `TIME REMAINING: ${this.timeLeft}`, timeConfig).setOrigin(0.5, 0);
 
         // GAME OVER flag
@@ -93,11 +102,32 @@ class Play extends Phaser.Scene {
         //     }, null, this);
 
         this.sceneStartTime = this.time.now;
+
+
+
+        if (multiplayer) {
+            GlobalData.turn = (GlobalData.turn) % 2 + 1;
+
+            this.fadingText = this.add.text(game.config.width / 2, game.config.height / 2, `player ${GlobalData.turn}`, {
+                fontSize: '32px',
+                color: '#FFFFFF'
+            }).setOrigin(0.5);
+
+            // Add a tween to fade out the text
+            this.tweens.add({
+                targets: this.fadingText, // Target the text object
+                alpha: 0, // Fade out to completely transparent
+                duration: 1000, // Duration of the fade (in milliseconds)
+                delay: 1000, // Delay before the fade starts (in milliseconds)
+                onComplete: () => {
+                    this.fadingText.destroy(); // Remove the text after it fades out
+                }
+            });
+        }
+
     }
 
     update() {
-
-
 
         //timer to track when the game ends
         if (this.timeLeft < (this.time.now - this.sceneStartTime) / 1000) {
@@ -116,8 +146,37 @@ class Play extends Phaser.Scene {
                 fixedWidth: 0
             }
 
-            this.add.text(game.config.width / 2, game.config.height / 2, 'GAME OVER', endConfig).setOrigin(0.5);
-            this.add.text(game.config.width / 2, game.config.height / 2 + 64, 'Press (R) to Restart or ← to Menu', endConfig).setOrigin(0.5);
+            if (multiplayer) {
+                if (GlobalData.turn == 1) {
+                    GlobalData.score = this.p1Score;
+                    this.add.text(game.config.width / 2, game.config.height / 2, 'PLAYER 1 GAME OVER', endConfig).setOrigin(0.5);
+                    endConfig.fontSize = '20px';
+                    this.add.text(game.config.width / 2, game.config.height / 2 + 64, 'Press (R) for Next Player or ← to Menu', endConfig).setOrigin(0.5);
+                    endConfig.fontSize = '28px';
+                }
+
+                else {
+                    if (GlobalData.score < this.p1Score) {
+                        this.add.text(game.config.width / 2, game.config.height / 2, 'PLAYER 1 WIN', endConfig).setOrigin(0.5);
+                        this.add.text(game.config.width / 2, game.config.height / 2 + 64, 'Press (R) to Restart or ← to Menu', endConfig).setOrigin(0.5);
+                    }
+
+                    else if (GlobalData.score == this.p1Score) {
+                        this.add.text(game.config.width / 2, game.config.height / 2, 'TIE', endConfig).setOrigin(0.5);
+                        this.add.text(game.config.width / 2, game.config.height / 2 + 64, 'Press (R) to Restart or ← to Menu', endConfig).setOrigin(0.5);
+                    }
+
+                    else {
+                        this.add.text(game.config.width / 2, game.config.height / 2, 'PLAYER 2 WIN', endConfig).setOrigin(0.5);
+                        this.add.text(game.config.width / 2, game.config.height / 2 + 64, 'Press (R) to Restart or ← to Menu', endConfig).setOrigin(0.5);
+                    }
+                }
+            }
+
+            else {
+                this.add.text(game.config.width / 2, game.config.height / 2, 'GAME OVER', endConfig).setOrigin(0.5);
+                this.add.text(game.config.width / 2, game.config.height / 2 + 64, 'Press (R) to Restart or ← to Menu', endConfig).setOrigin(0.5);
+            }
 
         }
 
@@ -132,6 +191,7 @@ class Play extends Phaser.Scene {
 
 
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            GlobalData.turn = 0;
             this.scene.start("menuScene");
         }
 
